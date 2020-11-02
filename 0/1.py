@@ -19,6 +19,8 @@ def task_one():
     print("A = \n", A)
     print("Closest orthogonal matrix c:\n ", c)
     print("Orthogonality proof: np.dot(c, c.T) \n", np.dot(c, c.T))
+    print("This matrix rotate vectors by an angle θ about the oz with angle ",
+          180 * np.arcsin(c[1, 0]) / np.pi, " degree")
 
 
 def task_two():
