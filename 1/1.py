@@ -29,14 +29,49 @@ def task_one():
     point = np.array([[np.round(p/point[2][0])] for p in point[:-1, 0]])
     print("Point in the camera scope:\n", point)
 
+def task_two_test():
+    """Gen data to test task 2"""
+    # First test
+    # Create points list for task two
+    points = np.random.rand(2, 4)
+    # Translate and rotate it somehow
+    tetta = np.random.uniform(low=0, high=2 * np.pi, size=(1,))[0]
+    R = np.array([[np.cos(tetta), -np.sin(tetta)],
+                  [np.sin(tetta), np.cos(tetta)]])
+    T = np.random.uniform(low=0, high=3, size=(2, 1))
+    H = np.append(R, T, axis=1)
+    points_translated = np.dot(H, np.append(points, np.ones((1, 4)), axis=0))
+    print("Points 2d translation + rotation:\n", H)
+    points_list = np.array(list(zip(points.T, points_translated.T)))
+    task_two(points_list)
+    # Second test
+    H = np.random.rand(3, 3)
+    points_translated = np.dot(H, np.append(points, np.ones((1, 4)), axis=0))
+    # Normalize it
+    points = np.random.rand(3, 4)
+    tetta = np.random.uniform(low=0, high=2 * np.pi, size=(1,))[0]
+    R = np.array([[np.cos(tetta), -np.sin(tetta), 0],
+                  [np.sin(tetta), np.cos(tetta), 0],
+                  [0, 0, 1]])
+    T = np.random.uniform(low=0, high=3, size=(3, 1))
+    H = np.append(R, T, axis=1)
+    print("Points 3d translation + rotation:\n", H)
+    points_translated = np.dot(H,  np.append(points, np.ones((1, 4)), axis=0))
+    # Convert to p2
+    norm = lambda x: [x[0] / x[2], x[1] / x[2]]
+    points = np.array([norm(x) for x in points.T]).T
+    points_translated = np.array([norm(x) for x in points_translated.T]).T
+    points_list = np.array(list(zip(points.T, points_translated.T)))
+    task_two(points_list)
+
 def task_two(points):
     """Find homography matrix from set of points pairs
     by direct linear transformation and SVD
     params:
-        points: set of points"""
+        points: array of points"""
     assert len(points) == 4, "Given too much point to calculate"
-    assert isinstance(points[0], tuple) and len(points[0][0]) == len(points[0][1]) == 2,\
-                                        "Inappropriate stucture of points set"
+    assert len(points[0][0]) == len(points[0][1]) == 2,\
+                                        "Inappropriate stucture of points list"
     # P` = H * P where
     #   P - initial points
     #   P` - homography translated points
@@ -64,11 +99,15 @@ def task_three():
     #                            defined up to constant
     # But in our case T == 0
     tetta = 30 * np.pi / 180
-    H = np.array([[1, 0, 0]
+    H = np.array([[1, 0, 0],
                   [0, np.cos(tetta), -np.sin(tetta)],
                   [0, np.sin(tetta), np.cos(tetta)],
                   ])
     print("Homography transformation:\n", H)
 
+
 if __name__ == '__main__':
-    task_one()
+    tasks = [task_one, task_two_test, task_three]
+    for i, task in enumerate(tasks):
+        print("-"*20 + " Task ", i+1, "-"*20)
+        task()
