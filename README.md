@@ -5,4 +5,4 @@
 
 [Second lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/2)  
 
-[Third lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/3)  
+[Third lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/3/1.py)  
