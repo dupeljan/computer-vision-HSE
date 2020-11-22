@@ -1,5 +1,5 @@
 # 3D Computer Vision Course HSE Mag Data Mining 20
-# Second exercise
+# First exercise
 # Daniil Lyakhov
 # dupeljan@gmail.com
 # dalyakhov@edu.hse.ru
@@ -7,107 +7,75 @@
 import numpy as np
 import cv2 as cv
 
+
 def task_one():
-    """Find camera projection matrix by
-    all params given"""
-    # Rotation about OZ by 45 degree
-    tetta = 45 * np.pi / 180
-    R = np.array([[np.cos(tetta), -np.sin(tetta), 0],
-                  [np.sin(tetta),  np.cos(tetta), 0],
-                  [0, 0, 1]])
-    T = np.array([[0, 0, 10]]).T
-    K = np.array([[400,   0, 960],
-                  [  0, 400, 540],
-                  [  0,   0,   1]])
-    P = np.dot(K, np.append(R, T, axis=1))
-    print("Projection matrix P:\n", P)
-    # Point to test
-    point = np.array([[10, -10, 100]]).T
-    print("Point coords in global scope:\n", point)
-    point = np.dot(P, np.append(point, np.ones((1, 1)), axis=0))
-    # Normalize
-    point = np.array([[np.round(p/point[2][0])] for p in point[:-1, 0]])
-    print("Point in the camera scope:\n", point)
+    """Find closes orthogonal matrix
+    in Frobenious distance space by SVD """
+    A = np.array([[0.5, 2.16506351, 0.4330127],
+                  [-0.8660254, 1.25, 0.25],
+                  [0, 0.5, 2.5]])
+    w, u, vt = cv.SVDecomp(A)
+    c = np.dot(u, vt)
+    print("A = \n", A)
+    print("Closest orthogonal matrix c:\n ", c)
+    print("Orthogonality proof: np.dot(c, c.T) \n", np.dot(c, c.T))
+    print("This matrix rotate vectors by an angle θ about the oz with angle ",
+          180 * np.arcsin(c[1, 0]) / np.pi, " degree")
 
-def task_two_test():
-    """Gen data to test task 2"""
-    # First test
-    # Create points list for task two
-    points = np.random.rand(2, 4)
-    # Translate and rotate it somehow
-    tetta = np.random.uniform(low=0, high=2 * np.pi, size=(1,))[0]
-    R = np.array([[np.cos(tetta), -np.sin(tetta)],
-                  [np.sin(tetta), np.cos(tetta)]])
-    T = np.random.uniform(low=0, high=3, size=(2, 1))
-    H = np.append(R, T, axis=1)
-    points_translated = np.dot(H, np.append(points, np.ones((1, 4)), axis=0))
-    print("Points 2d translation + rotation:\n", H)
-    points_list = np.array(list(zip(points.T, points_translated.T)))
-    task_two(points_list)
-    # Second test
-    H = np.random.rand(3, 3)
-    points_translated = np.dot(H, np.append(points, np.ones((1, 4)), axis=0))
-    # Normalize it
-    points = np.random.rand(3, 4)
-    tetta = np.random.uniform(low=0, high=2 * np.pi, size=(1,))[0]
-    R = np.array([[np.cos(tetta), -np.sin(tetta), 0],
-                  [np.sin(tetta), np.cos(tetta), 0],
-                  [0, 0, 1]])
-    T = np.random.uniform(low=0, high=3, size=(3, 1))
-    H = np.append(R, T, axis=1)
-    print("Points 3d translation + rotation:\n", H)
-    points_translated = np.dot(H,  np.append(points, np.ones((1, 4)), axis=0))
-    # Convert to p2
-    norm = lambda x: [x[0] / x[2], x[1] / x[2]]
-    points = np.array([norm(x) for x in points.T]).T
-    points_translated = np.array([norm(x) for x in points_translated.T]).T
-    points_list = np.array(list(zip(points.T, points_translated.T)))
-    task_two(points_list)
 
-def task_two(points):
-    """Find homography matrix from set of points pairs
-    by direct linear transformation and SVD
-    params:
-        points: array of points"""
-    assert len(points) == 4, "Given too much point to calculate"
-    assert len(points[0][0]) == len(points[0][1]) == 2,\
-                                        "Inappropriate stucture of points list"
-    # P` = H * P where
-    #   P - initial points
-    #   P` - homography translated points
-    # P` = H * U * S * VT
-    # H ~ P` * V * S^(-1) * UT
-    P = np.array([[x[0, 0], x[0, 1], 1] for x in points]).T
-    P_tilda = np.array([[x[1, 0], x[1, 1], 1] for x in points]).T
-    W, U, VT = cv.SVDecomp(P)
-    W_rev = np.diag(1 / W.flatten())
-    H = P_tilda.dot(VT.T).dot(W_rev).dot(U.T)
-    print("Homography matrix:\n", H)
+def task_two():
+    """ Find revers matrix for two given by SCD"""
+    for n in [3, 10]:
+        A = 1 / np.array([np.arange(n) + x + 1 for x in range(n)])
+        w, u, vt = cv.SVDecomp(A)
+        w_rev = np.diag(1 / w.flatten())
+        # u w vt r  = E
+        # r = vt.T w^-2 u.T
+        r = np.dot(vt.T, np.dot(w_rev, u.T))
+        print("A = \n", A)
+        print("Reverse A matrix r: \n", r)
+        print("np.dot(A, r): \n", np.dot(A, r))
 
 
 def task_three():
-    """Find homography transform matrix
-    between two pictures from one camera with
-    30 degree rotation around OX from camera origin"""
-    # Formula to calculate:
-    # q2 = (z2 / z1) * (R + T * nt / d) * q1
-    # where R - rotation
-    #       T - translation
-    #       nt - normal vertex of common plane of the 3d points
-    #       d  - shift of the common plane
-    #       and (R + T * nt / d) required homography transform
-    #                            defined up to constant
-    # But in our case T == 0
-    tetta = 30 * np.pi / 180
-    H = np.array([[1, 0, 0],
-                  [0, np.cos(tetta), -np.sin(tetta)],
-                  [0, np.sin(tetta), np.cos(tetta)],
-                  ])
-    print("Homography transformation:\n", H)
+    """ Find all solutions  Ax = 0"""
+    n = 4
+    A = np.array([np.arange(n) + x + 1 for x in range(n)], dtype=np.float64)
+    print("A = \n", A)
+    w, u, vt = cv.SVDecomp(A)
+    # Av_i = sigma_i * u_i
+    # hence
+    # all solutions for A x = 0  is
+    # v_i, corresponds to zero sigma value
+    # Find count of zero sigma
+    sol_dim = len(np.argwhere(w < 1e-5))
+    # Get vertices
+    sol = vt[-sol_dim:]
+    print("Solutions:")
+    for s in sol:
+        print("s = const *", s)
+        print("----check----\nnp.dot(A,s): \n", np.dot(A, s.T), "\n-------------")
+
+
+def task_four():
+    """ Find two lines intersection points """
+    l1, l2 = np.random.rand(3), np.random.rand(3)
+    # Perform vector mul
+    c = np.cross(l1, l2)
+    # Translate solution into plane
+    sol = c[0]/c[2], c[1]/c[2], 1
+    print("First line: {}x + {}y + {}".format(*l1))
+    print("Second line: {}x + {}y + {}".format(*l2))
+    print("Interception point: ", sol)
+    print("----Check----")
+    res = np.dot(sol, l1), np.dot(sol, l2)
+    print("Line 2 and point scalar product: ", res[0])
+    print("Line 3 and point scalar product: ", res[1])
+    print("If line dot point is equal to zero then this point on the line")
 
 
 if __name__ == '__main__':
-    tasks = [task_one, task_two_test, task_three]
-    for i, task in enumerate(tasks):
-        print("-"*20 + " Task ", i+1, "-"*20)
-        task()
+    task_one()
+    task_two()
+    task_three()
+    task_four()
