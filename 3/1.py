@@ -57,7 +57,6 @@ def task_two():
 
     # Find e2 = P2 * O1
     O1 = np.array([[0, 0, 0]]).T + T1
-    O1 = R1.dot(O1)
     e2 = P2.dot(np.append(O1, np.array([1])))
 
     # Find revers P1
@@ -82,7 +81,6 @@ def task_three():
     # Find coords of center of
     # the second camera
     O2 = np.array([[0, 0, 0]]).T + T
-    O2 = R.dot(O2)
 
     #O2 = np.append(O2, np.array([1]))
     # e = [I|0] O2 = O2
