@@ -24,7 +24,7 @@ def task_one():
 
 
 def task_two():
-    """ Find revers matrix for two given by SCD"""
+    """ Find revers matrix for two given by SVD"""
     for n in [3, 10]:
         A = 1 / np.array([np.arange(n) + x + 1 for x in range(n)])
         w, u, vt = cv.SVDecomp(A)
