@@ -68,6 +68,7 @@ def task_two():
     # Calc F
     P = P2.dot(P1_rev)
     F = np.array([np.cross(e2, P[:, i]) for i in range(3)])
+    F = np.cross(e2, P)
     print("F = \n", F)
 
 
