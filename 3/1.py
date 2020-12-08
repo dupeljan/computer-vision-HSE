@@ -45,10 +45,10 @@ def task_two():
                   [0, 0, 1]])
     T1 = np.array([[0, 0, 0]]).T
     tetta2 = -tetta1
-    R2 = np.array([[np.cos(tetta1), 0, np.sin(tetta1)],
+    R2 = np.array([[np.cos(tetta2), 0, np.sin(tetta2)],
                    [0, 1, 0],
-                   [-np.sin(tetta1), 0, np.cos(tetta1)]])
-    T2 = np.array([[0, 10, 0]]).T
+                   [-np.sin(tetta2), 0, np.cos(tetta2)]])
+    T2 = np.array([[10, 0, 0]]).T
     # Formula to calculate:
     # F = [e2]_x P2 P1_rev
     # P1, P2 - first and second projection matrix
@@ -56,7 +56,7 @@ def task_two():
     P2 = np.dot(np.diag(np.ones((3, ))), np.append(R2, T2, axis=1))
 
     # Find e2 = P2 * O1
-    O1 = np.array([[0, 0, 0]]).T + T1
+    O1 = np.array([[0, 0, 0]]).T
     e2 = P2.dot(np.append(O1, np.array([1])))
 
     # Find revers P1
@@ -67,9 +67,9 @@ def task_two():
 
     # Calc F
     P = P2.dot(P1_rev)
-    F = np.array([np.cross(e2, P[:, i]) for i in range(3)])
     F = np.cross(e2, P)
     print("F = \n", F)
+    print("Check  F * e2 = ", F.dot(e2))
 
 
 def task_three():
