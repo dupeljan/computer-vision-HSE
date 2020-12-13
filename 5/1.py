@@ -8,6 +8,7 @@ import PIL.ExifTags
 import numpy as np
 import cv2
 
+
 def task_one():
     '''Find intrinsic camera parametrs
     matrix by given
@@ -32,33 +33,27 @@ def task_one():
     print("K= \n", K)
     return K
 
+
 def task_two():
     """Use cv2.undistort"""
-    # prepare object points, like (0,0,0), (1,0,0), (2,0,0) ....,(6,5,0)
-    objp = np.zeros((6 * 7, 3), np.float32)
-    objp[:, :2] = np.mgrid[0:7, 0:6].T.reshape(-1, 2)
+    img = cv2.imread('GOPR01170000.jpg')
+    # Get params from opencv storage
+    storage_filename = "camera.xml"
+    s = cv2.FileStorage()
+    s.open(storage_filename, cv2.FileStorage_READ)
+    camera_matrix = s.getNode('camera_matrix').mat()
+    dist_coeffs = s.getNode('distortion_coefficients').mat()
+    h, w = img.shape[:2]
+    newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))
+    dst = cv2.undistort(img, camera_matrix, dist_coeffs, None, newcameramtx)
+    cv2.imwrite('result.jpg', dst)
 
-    # Arrays to store object points and image points from all the images.
-    objpoints = []  # 3d point in real world space
-    imgpoints = []  # 2d points in image plane.
 
-    img = cv2.imread("GOPR01170000.jpg")
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-    # Find the chess board corners
-    ret, corners = cv2.findChessboardCorners(gray, (7, 6), None)
-
-    # If found, add object points, image points (after refining them)
-    if ret == True:
-        objpoints.append(objp)
-
-        corners2 = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
-        imgpoints.append(corners2)
-
-        # Draw and display the corners
-        img = cv2.drawChessboardCorners(img, (7, 6), corners2, ret)
-        cv2.imshow('img', img)
-        cv2.waitKey(500)
-
+def task_three():
+    """
+    """
 if __name__ == '__main__':
-    task_two()
+    tasks = [task_one, task_two, task_three]
+    for i, task in enumerate(tasks):
+        print("-" * 20 + " Task ", i + 1, "-" * 20)
+        task()

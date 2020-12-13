@@ -15,7 +15,7 @@ def task_one():
     # F = [e2]_x H
     H = np.random.uniform(0, 5, (3, 3))
     e2 = np.append(np.random.uniform(0, 5, (2, 1)), [[1]], axis=0)
-    F = np.cross(e2.T, H)
+    F = np.cross(e2, H.T).T
     print("H = \n", H)
     print("e2 = \n", e2)
     print("F = \n", F)
