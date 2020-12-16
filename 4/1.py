@@ -15,7 +15,7 @@ def task_one():
     # F = [e2]_x H
     H = np.random.uniform(0, 5, (3, 3))
     e2 = np.append(np.random.uniform(0, 5, (2, 1)), [[1]], axis=0)
-    F = np.cross(e2, H.T).T
+    F = np.cross(e2, H, axisa=0, axisb=0, axisc=0)
     print("H = \n", H)
     print("e2 = \n", e2)
     print("F = \n", F)
@@ -76,47 +76,43 @@ def task_four():
     # Build cameras
     E = np.diag(np.ones((3, )))
     T1 = np.array([[0, 0, 0]]).T
-    T2 = np.array([[np.random.uniform(1, 10), 0, 0]]).T
+    T2 = np.array([[10, 0, 0]]).T
     print("X shift: \n", T2)
     P1 = np.append(E, T1, axis=1)
     P2 = np.append(E, T2, axis=1)
     # Eight random 3d points
-    Q = np.random.uniform(3, 10, (8, 3, 1))
-    print("Q = \n", Q)
-    Q1 = np.array([P1.dot(np.append(x, [1])) for x in Q])
-    Q2 = np.array([P2.dot(np.append(x, [1])) for x in Q])
-    # Build equation for fundamental matrix
-    W = list()
-    for q1, q2 in zip(Q1, Q2):
-        q1 /= q1[2]
-        q2 /= q2[2]
-        W += [[q1[0] * q2[0],
-               q1[1] * q2[0],
-               q2[1],
-               q1[0] * q2[1],
-               q1[1] * q2[1],
-               q2[1],
-               q1[0],
-               q1[1],
-               1
-               ]]
-    W = np.array(W)
-    # Get a pseudo reverce matrix
-    w, u, vt = cv.SVDecomp(W)
+    num_points = 8
+    Q = np.append(np.array([np.random.rand(3) * 10 for j in range(num_points)]),
+                  np.ones(num_points).reshape(num_points, 1), axis=1)
+    q1 = np.matmul(P1, Q.T)
+    q2 = np.matmul(P2, Q.T)
+
+    # normalize in
+    Q1 = (q1 / q1[2]).T
+    Q2 = (q2 / q2[2]).T
+    equations = []
+    for pts1, pts2 in zip(Q1, Q2):
+        u1 = pts1[0]
+        v1 = pts1[1]
+        u2 = pts2[0]
+        v2 = pts2[1]
+        equations.append([u1*u2, v1*u2, u2, u1*v2, v1*v2, v2, u1, v1, 1])
+
+    equations = np.array(equations).T
+    U,E,V = np.linalg.svd(equations)
+
     # Av_i = sigma_i * u_i
     # hence
-    # all solutions for A x = 0  is
+    # all solutions for A x = 0  is close to
     # v_i, corresponds to zero sigma value
-    # Find count of zero sigma
-    sol_dim = len(np.argwhere(w < 1e-5))
-    # Get vertices
-    sol = vt[-sol_dim:]
+    f = U[:, -1]
 
-    Fp = np.array(sol[0]).reshape(3, 3)
+    Fp = np.array(f).reshape(3, 3)
     # Find closest orthogonal matrix
     w, u, vt = cv.SVDecomp(Fp)
     F = np.dot(u.dot(np.diag(np.append(w.flatten()[:2], [0]))), vt)
     print("F = \n", F)
+
 
 if __name__ == '__main__':
     tasks = [task_one, task_two, task_three, task_four]

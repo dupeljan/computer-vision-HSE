@@ -7,8 +7,8 @@ import PIL.Image
 import PIL.ExifTags
 import numpy as np
 import cv2
-
-
+from pyquaternion import Quaternion
+from scipy.spatial.transform import Rotation as R
 def task_one():
     '''Find intrinsic camera parametrs
     matrix by given
@@ -47,11 +47,38 @@ def task_two():
     newcameramtx, roi = cv2.getOptimalNewCameraMatrix(camera_matrix, dist_coeffs, (w, h), 1, (w, h))
     dst = cv2.undistort(img, camera_matrix, dist_coeffs, None, newcameramtx)
     cv2.imwrite('result.jpg', dst)
-
+    print("result: ./result.jpg")
 
 def task_three():
     """
+    Find partial rotation between
+    cameras in task 3.1
     """
+    alpha1 = 45 * np.pi / 180
+    alpha2 = -alpha1
+    # matrixes of the translation
+    T1 = np.array([0,0,0]).reshape(3,1)
+    T2 = np.array([10,0,0]).reshape(3,1)
+    # rotation matrix R1
+    R1 = R.from_rotvec([0, 0, alpha1]).as_matrix()
+    # rotation matrix R2 over the OY
+    R2 = R.from_rotvec([0, alpha2, 0]).as_matrix()
+    # projection matrix P1 and P2
+    P1 = np.concatenate([R1.T, -np.dot(R1.T,T1)], axis=1)
+    P2 = np.concatenate([R2.T, -np.dot(R2.T,T2)], axis=1)
+
+    r1 = Quaternion(matrix=P1[:, :-1])
+    r2 = Quaternion(matrix=P2[:, :-1])
+
+    t1 = P1[:, -1].reshape(3, 1)
+    t2 = P2[:, -1].reshape(3, 1)
+    def compute_quatr(t):
+        T = t1*t + t2*(1-t)
+        R = ((1 - t) * r1 + t * r2).rotation_matrix
+        return np.append(R, T, axis=1)
+    res = compute_quatr(0.5)
+    print("Camera transform t = 0.5:\n", res)
+
 if __name__ == '__main__':
     tasks = [task_one, task_two, task_three]
     for i, task in enumerate(tasks):

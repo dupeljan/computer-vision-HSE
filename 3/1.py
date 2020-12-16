@@ -28,7 +28,7 @@ def task_one(silent= False):
                   [0, 0, 1]])
     T = np.array([[10, 0, 0]]).T
     # F = [T]_x R
-    F = np.cross(T.T, R.T).T
+    F = np.cross(T, R, axisa=0, axisb=0, axisc=0)
     if not silent:
         print("F =\n", F)
         return
@@ -38,7 +38,7 @@ def task_one(silent= False):
 def task_two():
     """Find fundamental matrix between
     two cams with some params"""
-    tetta1 = -45 * np.pi / 180
+    tetta1 = 45 * np.pi / 180
     R1 = np.array([[np.cos(tetta1), -np.sin(tetta1), 0],
                   [np.sin(tetta1), np.cos(tetta1), 0],
                   [0, 0, 1]])
@@ -51,8 +51,8 @@ def task_two():
     # Formula to calculate:
     # F = [e2]_x P2 P1_rev
     # P1, P2 - first and second projection matrix
-    P1 = np.dot(np.diag(np.ones((3, ))), np.append(R1, T1, axis=1))
-    P2 = np.dot(np.diag(np.ones((3, ))), np.append(R2, T2, axis=1))
+    P1 = np.concatenate([R1.T, -R1.T.dot(T1)], axis=1)
+    P2 = np.concatenate([R2.T, -R2.T.dot(T2)], axis=1)
 
     # Find e2 = P2 * O1
     O1 = np.array([[0, 0, 0]]).T
@@ -66,9 +66,9 @@ def task_two():
 
     # Calc F
     P = P2.dot(P1_rev)
-    F = np.cross(e2.T, P.T).T
+    F = np.cross(e2, P, axisa=0, axisb=0, axisc=0)
     print("F = \n", F)
-    print("Check  F * e2 = ", F.dot(e2))
+    print("Check  F.T * e2 = ", F.T.dot(e2))
 
 
 def task_three():
