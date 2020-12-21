@@ -26,7 +26,7 @@ def task_one():
     mm_per_inch = 25.4
     focal_length = 24
     cx, cy = [exif[val] // 2 for val in ["ExifImageWidth", "ExifImageHeight"]]
-    fx, fy = [focal_length * exif[val] * mm_per_inch for val in ["XResolution", "YResolution"]]
+    fx, fy = [focal_length * float(exif[val]) / mm_per_inch for val in ["XResolution", "YResolution"]]
     K = np.array([[fx, 0, cx],
                   [0, fy, cy],
                   [0, 0, 1]])
@@ -64,16 +64,18 @@ def task_three():
     # rotation matrix R2 over the OY
     R2 = R.from_rotvec([0, alpha2, 0]).as_matrix()
     # projection matrix P1 and P2
-    P1 = np.concatenate([R1.T, -np.dot(R1.T,T1)], axis=1)
-    P2 = np.concatenate([R2.T, -np.dot(R2.T,T2)], axis=1)
+    # P1 = np.concatenate([R1.T, -np.dot(R1.T,T1)], axis=1)
+    # P2 = np.concatenate([R2.T, -np.dot(R2.T,T2)], axis=1)
 
-    r1 = Quaternion(matrix=P1[:, :-1])
-    r2 = Quaternion(matrix=P2[:, :-1])
-
-    t1 = P1[:, -1].reshape(3, 1)
-    t2 = P2[:, -1].reshape(3, 1)
+    # r1 = Quaternion(matrix=P1[:, :-1])
+    # r2 = Quaternion(matrix=P2[:, :-1])
+    # Use global coords
+    r1 = Quaternion(matrix=R1)
+    r2 = Quaternion(matrix=R2)
+    # t1 = P1[:, -1].reshape(3, 1)
+    # t2 = P2[:, -1].reshape(3, 1)
     def compute_quatr(t):
-        T = t1*t + t2*(1-t)
+        T = T1*t + T2*(1-t)
         R = ((1 - t) * r1 + t * r2).rotation_matrix
         return np.append(R, T, axis=1)
     res = compute_quatr(0.5)
