@@ -7,7 +7,7 @@ def main():
     th, tw = 0, 0
     speedh, speedw = 6, 6
     w, h = vid.read()[1].shape[:-1]
-    out = cv2.VideoWriter('outpy_1.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 30, (h, w))
+    out = cv2.VideoWriter('outpy_2.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 30, (h, w))
 
 
     while(True):
