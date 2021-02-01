@@ -15,20 +15,24 @@ def task(input_path):
     cv2.imshow("Canny", resize(Canny, 20))
     cv2.waitKey()
     # Find corners
-    dst = cv2.cornerHarris(y_equalize, 2, 3, 4e-3)
+    dst = cv2.cornerHarris(Canny, 5, 3, 4e-3)
     # Normalizing
     dst_norm = np.empty(dst.shape, dtype=np.float32)
     cv2.normalize(dst, dst_norm, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
-    dst_norm_scaled = cv2.convertScaleAbs(dst_norm)
-    thresh = 0.9
+    thresh = int(np.quantile(dst_norm, 1 - 250/np.dot(*dst_norm.shape)))
+
     # Drawing a circle around corners
     for i in range(dst_norm.shape[0]):
         for j in range(dst_norm.shape[1]):
             if int(dst_norm[i, j]) > thresh:
-                cv2.circle(dst_norm_scaled, (j, i), 5, (0), 2)
-    #thresh = np.quantile(dst, 0.95)
-    #Canny[dst > thresh] = 255
-    cv2.imshow('dst', resize(Canny, 20))
+                cv2.circle(Canny, (j, i), 10, 255, -1)
+    cv2.imshow('Corners', resize(Canny, 20))
+    cv2.waitKey()
+    thresh = cv2.threshold(Canny, 20, 255, cv2.THRESH_BINARY)[1]
+    cv2.imshow("Thresh", cv2.resize(thresh, 20))
+    cv2.waitKey()
+    dst = cv2.distanceTransform(thresh, cv2.DIST_L2, 5)
+    cv2.imshow("Distance", resize(dst, 20))
     cv2.waitKey()
     pass
 

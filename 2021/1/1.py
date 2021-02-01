@@ -1,14 +1,8 @@
 import cv2
 import numpy as np
+from utils import resize
 
 IMAGE_PATH = "whiteballssample.jpg"
-
-def resize(img, scale_percent=30):
-    width = int(img.shape[1] * scale_percent / 100)
-    height = int(img.shape[0] * scale_percent / 100)
-    dim = (width, height)
-    # resize image
-    return cv2.resize(img, dim, interpolation=cv2.INTER_AREA)
 
 
 def count_balls(image_path):
