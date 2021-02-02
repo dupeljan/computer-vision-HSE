@@ -2,6 +2,24 @@ import cv2
 import numpy as np
 from utils import resize
 
+def adaptive_conv(integral, y_equalize, dst, k = 9):
+    filtered = np.empty_like(integral)
+    h, w = integral.shape
+    for i in range(integral.shape[0]):
+        for j in range(integral.shape[1]):
+            size = int(k * (1 - dst[i, j]))
+            if not size:
+                filtered[i, j] = y_equalize[i, j]
+                continue
+            x0, y0 = max(i - size, 0), max(j - size, 0)
+            x1, y1 = min(i + size, h - 1), min(j + size, w - 1)
+            filtered[i, j] = integral[x0, y0] + integral[x1, y1] \
+                             - integral[x1, y0] - integral[x0, y1]
+            filtered[i, j] /= (2 * size) ** 2
+            filtered[i, j] = min(filtered[i, j], 255)
+    return filtered.astype(np.uint8)
+
+
 def task(input_path):
     img = cv2.imread(input_path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
@@ -29,11 +47,24 @@ def task(input_path):
     cv2.imshow('Corners', resize(Canny, 20))
     cv2.waitKey()
     thresh = cv2.threshold(Canny, 20, 255, cv2.THRESH_BINARY)[1]
-    cv2.imshow("Thresh", cv2.resize(thresh, 20))
+    thresh = cv2.dilate(thresh, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)))
+    cv2.imshow("Thresh + dilate", resize(thresh, 20))
     cv2.waitKey()
-    dst = cv2.distanceTransform(thresh, cv2.DIST_L2, 5)
-    cv2.imshow("Distance", resize(dst, 20))
+    dst = cv2.distanceTransform(thresh, cv2.DIST_L2, 3)
+    cv2.normalize(dst, dst, 0, 1.0, cv2.NORM_MINMAX)
+    cv2.imshow("Distance map", resize(dst, 20))
     cv2.waitKey()
+    integral = cv2.integral(y_equalize)[1:, 1:]
+    # Filtering
+    filtered = adaptive_conv(integral, y_equalize, dst)
+    #filtered = cv2.normalize(filtered, filtered, 0, 255.0, cv2.NORM_MINMAX).astype(np.float)
+    cv2.imshow("Filtered: ", resize(filtered, 30))
+    cv2.waitKey()
+    img[:, :, 0] = filtered
+    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)
+    cv2.imshow("Result", img)
+    cv2.waitKey()
+    cv2.imwrite("out.jpg", img)
     pass
 
 
