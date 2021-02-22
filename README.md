@@ -1,8 +1,12 @@
 # computer-vision-HSE
 
-### Classic Computer Vision labse  HSE Data Mining 20
+### Classic Computer Vision labse  HSE Data Mining 21
 
 [First lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/2021/1/1.py)
+
+[Second lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/2021/2/1.py)
+
+[Third lab](https://github.com/dupeljan/computer-vision-HSE/blob/master/2021/3/HW3.ipynb)
 
 ### 3D Computer Vision labs HSE Data Mining 20
 
